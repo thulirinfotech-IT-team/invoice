@@ -1,4 +1,5 @@
 import os
+import dj_database_url
 from pathlib import Path
 from decouple import config
 from datetime import timedelta
@@ -55,13 +56,17 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'thulirinfo.wsgi.application'
 
-# Database — SQLite
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+# Database — PostgreSQL on Render, SQLite locally
+_db_url = config('DATABASE_URL', default='')
+if _db_url:
+    DATABASES = {'default': dj_database_url.parse(_db_url, conn_max_age=600)}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
     }
-}
 
 AUTH_PASSWORD_VALIDATORS = []  # Disabled for development — re-enable in production
 
