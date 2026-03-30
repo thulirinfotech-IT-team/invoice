@@ -43,19 +43,9 @@ export default function InvoicePreview() {
     }
   }
 
-  const downloadPdf = async () => {
-    if (invoice?.pdf_url) {
-      // Use signed URL from backend — bypasses Cloudinary access restrictions
-      window.open(invoice.pdf_url, '_blank')
-    } else {
-      try {
-        const res = await invoicesAPI.regeneratePdf(id)
-        window.open(res.data.pdf_url, '_blank')
-        fetchInvoice()
-      } catch {
-        toast.error('Failed to generate PDF.')
-      }
-    }
+  const downloadPdf = () => {
+    // Serve PDF directly from Django backend — bypasses all Cloudinary restrictions
+    window.open(invoicesAPI.downloadPdfUrl(id), '_blank')
   }
 
   const regeneratePdf = async () => {

@@ -67,8 +67,9 @@ BORDER      = colors.HexColor('#e5e7eb')
 PAGE_W = A4[0] - 36 * mm   # usable width  ≈ 174 mm
 
 
-# ── Main entry point ──────────────────────────────────────────────────────────
-def generate_invoice_pdf(invoice):
+# ── Shared PDF builder ────────────────────────────────────────────────────────
+def build_pdf_buffer(invoice):
+    """Build the PDF and return a BytesIO buffer. Used by both upload and download."""
     buffer = BytesIO()
     doc = SimpleDocTemplate(
         buffer,
@@ -100,8 +101,15 @@ def generate_invoice_pdf(invoice):
     ]
 
     doc.build(story)
+    buffer.seek(0)
+    return buffer
 
-    # Upload PDF bytes to Cloudinary (public access)
+
+# ── Main entry point ──────────────────────────────────────────────────────────
+def generate_invoice_pdf(invoice):
+    """Generate PDF, upload to Cloudinary, return secure URL."""
+    buffer = build_pdf_buffer(invoice)
+
     result = cloudinary.uploader.upload(
         buffer.getvalue(),
         public_id=f"invoices/{invoice.invoice_number}",

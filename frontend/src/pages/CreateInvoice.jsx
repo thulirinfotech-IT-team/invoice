@@ -161,11 +161,8 @@ export default function CreateInvoice() {
       const res = await invoicesAPI.create(payload)
       toast.success(`Invoice ${res.data.invoice_number} created!`)
 
-      // Auto-open PDF
-      const pdfUrl = res.data.pdf_url
-      if (pdfUrl) {
-        window.open(pdfUrl, '_blank')
-      }
+      // Open PDF directly from backend — bypasses Cloudinary restrictions
+      window.open(invoicesAPI.downloadPdfUrl(res.data.id), '_blank')
 
       navigate(`/invoices/${res.data.id}`)
     } catch (err) {

@@ -10,7 +10,7 @@ from .serializers import (
     ClientSerializer, ServiceSerializer,
     InvoiceSerializer, InvoiceListSerializer
 )
-from .pdf_generator import generate_invoice_pdf
+from .pdf_generator import generate_invoice_pdf, build_pdf_buffer
 import datetime
 
 
@@ -109,32 +109,13 @@ class InvoiceViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['get'])
     def download_pdf(self, request, pk=None):
-        """Proxy PDF through Django — bypasses Cloudinary access restrictions."""
-        import urllib.request
-        import urllib.error
+        """Generate PDF on-the-fly and serve directly — no Cloudinary redirect."""
         from django.http import HttpResponse
-        import cloudinary.utils
-
         invoice = self.get_object()
-        if not invoice.pdf_file:
-            return Response({'error': 'PDF not generated yet.'}, status=status.HTTP_404_NOT_FOUND)
-
-        # Generate signed URL to fetch from Cloudinary with auth
-        signed_url, _ = cloudinary.utils.cloudinary_url(
-            f"invoices/{invoice.invoice_number}",
-            resource_type="raw",
-            format="pdf",
-            sign_url=True,
-            secure=True,
-        )
-        try:
-            with urllib.request.urlopen(signed_url) as r:
-                content = r.read()
-            response = HttpResponse(content, content_type='application/pdf')
-            response['Content-Disposition'] = f'inline; filename="{invoice.invoice_number}.pdf"'
-            return response
-        except urllib.error.HTTPError as e:
-            return Response({'error': f'PDF fetch failed: {e.code}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        buffer = build_pdf_buffer(invoice)
+        response = HttpResponse(buffer.getvalue(), content_type='application/pdf')
+        response['Content-Disposition'] = f'inline; filename="{invoice.invoice_number}.pdf"'
+        return response
 
     @action(detail=True, methods=['post'])
     def regenerate_pdf(self, request, pk=None):
