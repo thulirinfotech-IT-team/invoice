@@ -91,6 +91,7 @@ export const invoicesAPI = {
   markPaid: (id) => api.post(`/api/invoices/${id}/mark_paid/`),
   markUnpaid: (id) => api.post(`/api/invoices/${id}/mark_unpaid/`),
   regeneratePdf: (id) => api.post(`/api/invoices/${id}/regenerate_pdf/`),
+  downloadPdfUrl: (id) => `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8001'}/api/invoices/${id}/download_pdf/`,
   dashboardStats: () => api.get('/api/invoices/dashboard_stats/'),
 }
 

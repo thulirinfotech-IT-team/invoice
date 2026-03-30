@@ -1,6 +1,22 @@
 from rest_framework import serializers
 from .models import Client, Service, Invoice, InvoiceItem
 from decimal import Decimal
+import cloudinary.utils
+
+
+def _signed_pdf_url(invoice_number):
+    """Return a signed Cloudinary URL that works regardless of account security settings."""
+    try:
+        url, _ = cloudinary.utils.cloudinary_url(
+            f"invoices/{invoice_number}",
+            resource_type="raw",
+            format="pdf",
+            sign_url=True,
+            secure=True,
+        )
+        return url
+    except Exception:
+        return None
 
 
 class ClientSerializer(serializers.ModelSerializer):
@@ -66,7 +82,9 @@ class InvoiceSerializer(serializers.ModelSerializer):
         ]
 
     def get_pdf_url(self, obj):
-        return obj.pdf_file or None
+        if not obj.pdf_file:
+            return None
+        return _signed_pdf_url(obj.invoice_number)
 
     def validate_items(self, value):
         if not value:
@@ -128,7 +146,9 @@ class InvoiceListSerializer(serializers.ModelSerializer):
         ]
 
     def get_pdf_url(self, obj):
-        return obj.pdf_file or None
+        if not obj.pdf_file:
+            return None
+        return _signed_pdf_url(obj.invoice_number)
 
     def get_item_count(self, obj):
         # Use prefetch cache if available (avoids N+1 query)

@@ -107,13 +107,50 @@ class InvoiceViewSet(viewsets.ModelViewSet):
         invoice.save(update_fields=['status'])
         return Response({'status': 'unpaid', 'message': 'Invoice marked as unpaid.'})
 
+    @action(detail=True, methods=['get'])
+    def download_pdf(self, request, pk=None):
+        """Proxy PDF through Django — bypasses Cloudinary access restrictions."""
+        import urllib.request
+        import urllib.error
+        from django.http import HttpResponse
+        import cloudinary.utils
+
+        invoice = self.get_object()
+        if not invoice.pdf_file:
+            return Response({'error': 'PDF not generated yet.'}, status=status.HTTP_404_NOT_FOUND)
+
+        # Generate signed URL to fetch from Cloudinary with auth
+        signed_url, _ = cloudinary.utils.cloudinary_url(
+            f"invoices/{invoice.invoice_number}",
+            resource_type="raw",
+            format="pdf",
+            sign_url=True,
+            secure=True,
+        )
+        try:
+            with urllib.request.urlopen(signed_url) as r:
+                content = r.read()
+            response = HttpResponse(content, content_type='application/pdf')
+            response['Content-Disposition'] = f'inline; filename="{invoice.invoice_number}.pdf"'
+            return response
+        except urllib.error.HTTPError as e:
+            return Response({'error': f'PDF fetch failed: {e.code}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
     @action(detail=True, methods=['post'])
     def regenerate_pdf(self, request, pk=None):
+        import cloudinary.utils
         invoice = self.get_object()
         try:
             pdf_url = generate_invoice_pdf(invoice)
             Invoice.objects.filter(pk=invoice.pk).update(pdf_file=pdf_url)
-            return Response({'pdf_url': pdf_url, 'message': 'PDF regenerated successfully.'})
+            signed_url, _ = cloudinary.utils.cloudinary_url(
+                f"invoices/{invoice.invoice_number}",
+                resource_type="raw",
+                format="pdf",
+                sign_url=True,
+                secure=True,
+            )
+            return Response({'pdf_url': signed_url, 'message': 'PDF regenerated successfully.'})
         except Exception as e:
             return Response(
                 {'error': str(e)},

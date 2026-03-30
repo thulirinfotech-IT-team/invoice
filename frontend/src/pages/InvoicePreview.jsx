@@ -45,6 +45,7 @@ export default function InvoicePreview() {
 
   const downloadPdf = async () => {
     if (invoice?.pdf_url) {
+      // Use signed URL from backend — bypasses Cloudinary access restrictions
       window.open(invoice.pdf_url, '_blank')
     } else {
       try {
