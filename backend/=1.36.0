@@ -1,0 +1,11 @@
+Collecting cloudinary
+  Using cached cloudinary-1.44.1-py3-none-any.whl.metadata (8.0 kB)
+Requirement already satisfied: six in c:\users\vidhya sri\appdata\local\programs\python\python310\lib\site-packages (from cloudinary) (1.17.0)
+Requirement already satisfied: urllib3>=1.26.5 in c:\users\vidhya sri\appdata\local\programs\python\python310\lib\site-packages (from cloudinary) (2.6.3)
+Requirement already satisfied: certifi in c:\users\vidhya sri\appdata\local\programs\python\python310\lib\site-packages (from cloudinary) (2026.1.4)
+Using cached cloudinary-1.44.1-py3-none-any.whl (147 kB)
+Installing collected packages: cloudinary
+Successfully installed cloudinary-1.44.1
+
+[notice] A new release of pip is available: 25.3 -> 26.0.1
+[notice] To update, run: C:\Users\vidhya sri\AppData\Local\Programs\Python\Python310\python.exe -m pip install --upgrade pip

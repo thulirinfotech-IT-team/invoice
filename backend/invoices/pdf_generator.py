@@ -4,6 +4,7 @@ Modern green theme | ReportLab Platypus | A4
 """
 import os
 from io import BytesIO
+import cloudinary.uploader
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import ParagraphStyle
@@ -68,11 +69,6 @@ PAGE_W = A4[0] - 36 * mm   # usable width  ≈ 174 mm
 
 # ── Main entry point ──────────────────────────────────────────────────────────
 def generate_invoice_pdf(invoice):
-    filename = f"{invoice.invoice_number}.pdf"
-    out_dir  = os.path.join(settings.MEDIA_ROOT, 'invoices')
-    os.makedirs(out_dir, exist_ok=True)
-    filepath = os.path.join(out_dir, filename)
-
     buffer = BytesIO()
     doc = SimpleDocTemplate(
         buffer,
@@ -105,10 +101,15 @@ def generate_invoice_pdf(invoice):
 
     doc.build(story)
 
-    with open(filepath, 'wb') as f:
-        f.write(buffer.getvalue())
-
-    return f"invoices/{filename}"
+    # Upload PDF bytes to Cloudinary
+    result = cloudinary.uploader.upload(
+        buffer.getvalue(),
+        public_id=f"invoices/{invoice.invoice_number}",
+        resource_type="raw",
+        overwrite=True,
+        format="pdf",
+    )
+    return result['secure_url']
 
 
 # ── Style helpers ─────────────────────────────────────────────────────────────

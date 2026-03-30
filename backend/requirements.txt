@@ -8,3 +8,4 @@ reportlab>=4.1.0
 gunicorn>=21.2.0
 whitenoise>=6.6.0
 django-filter>=23.5
+cloudinary>=1.36.0

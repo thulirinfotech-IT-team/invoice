@@ -76,9 +76,9 @@ class InvoiceViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         invoice = serializer.save()
         try:
-            pdf_path = generate_invoice_pdf(invoice)
-            Invoice.objects.filter(pk=invoice.pk).update(pdf_file=pdf_path)
-            invoice.pdf_file = pdf_path
+            pdf_url = generate_invoice_pdf(invoice)
+            Invoice.objects.filter(pk=invoice.pk).update(pdf_file=pdf_url)
+            invoice.pdf_file = pdf_url
         except Exception as e:
             import traceback
             print(f"PDF generation error: {e}")
@@ -86,11 +86,10 @@ class InvoiceViewSet(viewsets.ModelViewSet):
 
     def perform_update(self, serializer):
         invoice = serializer.save()
-        # Regenerate PDF on update
         try:
-            pdf_path = generate_invoice_pdf(invoice)
-            Invoice.objects.filter(pk=invoice.pk).update(pdf_file=pdf_path)
-            invoice.pdf_file = pdf_path
+            pdf_url = generate_invoice_pdf(invoice)
+            Invoice.objects.filter(pk=invoice.pk).update(pdf_file=pdf_url)
+            invoice.pdf_file = pdf_url
         except Exception as e:
             print(f"PDF regeneration error: {e}")
 
@@ -112,10 +111,8 @@ class InvoiceViewSet(viewsets.ModelViewSet):
     def regenerate_pdf(self, request, pk=None):
         invoice = self.get_object()
         try:
-            pdf_path = generate_invoice_pdf(invoice)
-            Invoice.objects.filter(pk=invoice.pk).update(pdf_file=pdf_path)
-            invoice.refresh_from_db()
-            pdf_url = request.build_absolute_uri(invoice.pdf_file.url)
+            pdf_url = generate_invoice_pdf(invoice)
+            Invoice.objects.filter(pk=invoice.pk).update(pdf_file=pdf_url)
             return Response({'pdf_url': pdf_url, 'message': 'PDF regenerated successfully.'})
         except Exception as e:
             return Response(

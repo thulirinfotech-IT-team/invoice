@@ -112,6 +112,15 @@ else:
     CORS_ALLOW_ALL_ORIGINS = True   # development fallback
 CORS_ALLOW_CREDENTIALS = True
 
+# Cloudinary
+import cloudinary
+cloudinary.config(
+    cloud_name=config('CLOUDINARY_CLOUD_NAME', default=''),
+    api_key=config('CLOUDINARY_API_KEY', default=''),
+    api_secret=config('CLOUDINARY_API_SECRET', default=''),
+    secure=True,
+)
+
 # Company Info (used in PDF generation)
 COMPANY_NAME = 'Thulirinfo Tech'
 COMPANY_ADDRESS = 'Odasalpatti X Road, Dharmapuri,\nTamilNadu – 635303'

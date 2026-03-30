@@ -66,10 +66,7 @@ class InvoiceSerializer(serializers.ModelSerializer):
         ]
 
     def get_pdf_url(self, obj):
-        request = self.context.get('request')
-        if obj.pdf_file and request:
-            return request.build_absolute_uri(obj.pdf_file.url)
-        return None
+        return obj.pdf_file or None
 
     def validate_items(self, value):
         if not value:
@@ -131,10 +128,7 @@ class InvoiceListSerializer(serializers.ModelSerializer):
         ]
 
     def get_pdf_url(self, obj):
-        request = self.context.get('request')
-        if obj.pdf_file and request:
-            return request.build_absolute_uri(obj.pdf_file.url)
-        return None
+        return obj.pdf_file or None
 
     def get_item_count(self, obj):
         # Use prefetch cache if available (avoids N+1 query)
