@@ -119,19 +119,12 @@ class InvoiceViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['post'])
     def regenerate_pdf(self, request, pk=None):
-        import cloudinary.utils
+        """Regenerate PDF and return public URL (no signed URL)."""
         invoice = self.get_object()
         try:
             pdf_url = generate_invoice_pdf(invoice)
             Invoice.objects.filter(pk=invoice.pk).update(pdf_file=pdf_url)
-            signed_url, _ = cloudinary.utils.cloudinary_url(
-                f"invoices/{invoice.invoice_number}",
-                resource_type="raw",
-                format="pdf",
-                sign_url=True,
-                secure=True,
-            )
-            return Response({'pdf_url': signed_url, 'message': 'PDF regenerated successfully.'})
+            return Response({'pdf_url': pdf_url, 'message': 'PDF regenerated successfully.'})
         except Exception as e:
             return Response(
                 {'error': str(e)},
