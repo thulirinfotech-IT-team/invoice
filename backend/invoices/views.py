@@ -108,13 +108,21 @@ class InvoiceViewSet(viewsets.ModelViewSet):
         return Response({'status': 'unpaid', 'message': 'Invoice marked as unpaid.'})
 
     @action(detail=True, methods=['get'], permission_classes=[])
+    def get_pdf_url(self, request, pk=None):
+        """Return the public PDF URL from database (no signing). Public endpoint."""
+        invoice = self.get_object()
+        if not invoice.pdf_file:
+            return Response({'error': 'PDF not available'}, status=status.HTTP_404_NOT_FOUND)
+        return Response({'pdf_url': invoice.pdf_file})
+
+    @action(detail=True, methods=['get'], permission_classes=[])
     def download_pdf(self, request, pk=None):
-        """Generate PDF on-the-fly and serve directly. Public so window.open works."""
+        """Generate PDF on-the-fly and serve directly. Public endpoint with attachment."""
         from django.http import HttpResponse
         invoice = self.get_object()
         buffer = build_pdf_buffer(invoice)
         response = HttpResponse(buffer.getvalue(), content_type='application/pdf')
-        response['Content-Disposition'] = f'inline; filename="{invoice.invoice_number}.pdf"'
+        response['Content-Disposition'] = f'attachment; filename="{invoice.invoice_number}.pdf"'
         return response
 
     @action(detail=True, methods=['post'])

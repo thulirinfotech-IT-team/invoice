@@ -80,16 +80,16 @@ export default function InvoiceList() {
     }
   }
 
-  const downloadPdf = async (inv) => {
+  const downloadPdf = (inv) => {
+    // Primary: use stored Cloudinary URL (public access)
+    // Fallback: use server-generated PDF endpoint
     if (inv.pdf_url) {
-      window.open(inv.pdf_url, '_blank')
-    } else {
-      try {
-        const res = await invoicesAPI.regeneratePdf(inv.id)
-        window.open(res.data.pdf_url, '_blank')
-      } catch {
-        toast.error('PDF not available.')
+      const newWindow = window.open(inv.pdf_url, '_blank')
+      if (!newWindow || newWindow.location === 'about:blank') {
+        window.location.href = invoicesAPI.downloadPdfUrl(inv.id)
       }
+    } else {
+      window.open(invoicesAPI.downloadPdfUrl(inv.id), '_blank')
     }
   }
 

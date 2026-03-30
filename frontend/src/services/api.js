@@ -91,7 +91,8 @@ export const invoicesAPI = {
   markPaid: (id) => api.post(`/api/invoices/${id}/mark_paid/`),
   markUnpaid: (id) => api.post(`/api/invoices/${id}/mark_unpaid/`),
   regeneratePdf: (id) => api.post(`/api/invoices/${id}/regenerate_pdf/`),
-  downloadPdfUrl: (id) => `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8001'}/api/invoices/${id}/download_pdf/`,
+  downloadPdfUrl: (id) => `${BASE_URL}/api/invoices/${id}/download_pdf/`,
+  getPdfUrl: (id) => api.get(`/api/invoices/${id}/get_pdf_url/`),
   dashboardStats: () => api.get('/api/invoices/dashboard_stats/'),
 }
 

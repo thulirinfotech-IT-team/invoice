@@ -17,7 +17,6 @@ export default function InvoicePreview() {
   const [loading, setLoading] = useState(true)
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [deleting, setDeleting] = useState(false)
-  const [downloading, setDownloading] = useState(false)
 
   const fetchInvoice = () => {
     setLoading(true)
@@ -44,16 +43,20 @@ export default function InvoicePreview() {
     }
   }
 
-  const downloadPdf = async () => {
-    setDownloading(true)
-    try {
-      const response = await invoicesAPI.downloadPdfUrl(id)
-      window.open(response.config.url.replace('/api', ''), '_blank')
-    } catch (error) {
-      console.error('Download error:', error)
-      toast.error('Failed to download PDF. Please try again.')
-    } finally {
-      setDownloading(false)
+  const downloadPdf = () => {
+    // Primary: use stored Cloudinary URL (public access)
+    // Fallback: use server-generated PDF endpoint
+    const cloudinaryUrl = invoice?.pdf_url
+    if (cloudinaryUrl) {
+      // Try direct Cloudinary URL first
+      const newWindow = window.open(cloudinaryUrl, '_blank')
+      // If popup blocked or fails, fallback to server
+      if (!newWindow || newWindow.location === 'about:blank') {
+        window.location.href = invoicesAPI.downloadPdfUrl(id)
+      }
+    } else {
+      // No stored URL, use server endpoint
+      window.open(invoicesAPI.downloadPdfUrl(id), '_blank')
     }
   }
 
@@ -103,12 +106,8 @@ export default function InvoicePreview() {
               : <><MdCheckCircle size={17} />Mark Paid</>
             }
           </button>
-          <button onClick={downloadPdf} className="btn-primary" disabled={downloading}>
-            {downloading ? (
-              <span className="flex items-center gap-1">Downloading...</span>
-            ) : (
-              <><MdDownload size={17} /> Download PDF</>
-            )}
+          <button onClick={downloadPdf} className="btn-primary">
+            <MdDownload size={17} /> Download PDF
           </button>
           <button onClick={regeneratePdf} className="btn-secondary" title="Regenerate PDF">
             <MdRefresh size={17} />
