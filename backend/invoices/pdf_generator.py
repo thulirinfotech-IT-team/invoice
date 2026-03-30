@@ -101,13 +101,15 @@ def generate_invoice_pdf(invoice):
 
     doc.build(story)
 
-    # Upload PDF bytes to Cloudinary
+    # Upload PDF bytes to Cloudinary (public access)
     result = cloudinary.uploader.upload(
         buffer.getvalue(),
         public_id=f"invoices/{invoice.invoice_number}",
         resource_type="raw",
         overwrite=True,
         format="pdf",
+        access_mode="public",
+        type="upload",
     )
     return result['secure_url']
 
