@@ -107,9 +107,9 @@ class InvoiceViewSet(viewsets.ModelViewSet):
         invoice.save(update_fields=['status'])
         return Response({'status': 'unpaid', 'message': 'Invoice marked as unpaid.'})
 
-    @action(detail=True, methods=['get'])
+    @action(detail=True, methods=['get'], permission_classes=[])
     def download_pdf(self, request, pk=None):
-        """Generate PDF on-the-fly and serve directly — no Cloudinary redirect."""
+        """Generate PDF on-the-fly and serve directly. Public so window.open works."""
         from django.http import HttpResponse
         invoice = self.get_object()
         buffer = build_pdf_buffer(invoice)

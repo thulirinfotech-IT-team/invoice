@@ -161,23 +161,8 @@ export default function CreateInvoice() {
       const res = await invoicesAPI.create(payload)
       toast.success(`Invoice ${res.data.invoice_number} created!`)
 
-      // Fetch PDF with auth token and trigger download
-      try {
-        const token = localStorage.getItem('access_token')
-        const pdfRes = await fetch(invoicesAPI.downloadPdfUrl(res.data.id), {
-          headers: { Authorization: `Bearer ${token}` },
-        })
-        if (pdfRes.ok) {
-          const blob = await pdfRes.blob()
-          const url = URL.createObjectURL(blob)
-          const a = document.createElement('a')
-          a.href = url
-          a.target = '_blank'
-          a.download = `${res.data.invoice_number}.pdf`
-          a.click()
-          URL.revokeObjectURL(url)
-        }
-      } catch { /* PDF open failed silently — user can download from invoice page */ }
+      // Open PDF directly — endpoint is public so no auth needed
+      window.open(invoicesAPI.downloadPdfUrl(res.data.id), '_blank')
 
       navigate(`/invoices/${res.data.id}`)
     } catch (err) {

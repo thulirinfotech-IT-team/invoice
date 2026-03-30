@@ -43,31 +43,15 @@ export default function InvoicePreview() {
     }
   }
 
-  const downloadPdf = async () => {
-    try {
-      const token = localStorage.getItem('access_token')
-      const response = await fetch(invoicesAPI.downloadPdfUrl(id), {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      if (!response.ok) throw new Error('Failed to fetch PDF')
-      const blob = await response.blob()
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.target = '_blank'
-      a.download = `${invoice.invoice_number}.pdf`
-      a.click()
-      URL.revokeObjectURL(url)
-    } catch {
-      toast.error('Failed to download PDF.')
-    }
+  const downloadPdf = () => {
+    window.open(invoicesAPI.downloadPdfUrl(id), '_blank')
   }
 
   const regeneratePdf = async () => {
     try {
-      const res = await invoicesAPI.regeneratePdf(id)
+      await invoicesAPI.regeneratePdf(id)
       toast.success('PDF regenerated.')
-      window.open(res.data.pdf_url, '_blank')
+      window.open(invoicesAPI.downloadPdfUrl(id), '_blank')
       fetchInvoice()
     } catch {
       toast.error('Failed to regenerate PDF.')
